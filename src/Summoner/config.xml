@@ -1,0 +1,5 @@
+﻿<?xml version="1.0"?>
+<Config>
+  <AuthenticationToken value="API token here" />
+  <Database path=".\db\summoner.db" />
+</Config>
