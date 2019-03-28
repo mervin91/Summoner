@@ -49,7 +49,7 @@ namespace Summoner
 			}
 			catch (Exception exception)
 			{
-				Log.WriteAndQuit(exception.Message + Environment.NewLine + exception.StackTrace, ExitCodes.Error);
+				Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace Summoner
 				}
 				catch (Exception exception)
 				{
-					Log.WriteAndQuit(exception.Message + Environment.NewLine + exception.StackTrace, ExitCodes.Error);
+					Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
 				}
 			}
 		}
