@@ -4,6 +4,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using System.Threading;
 using Telegram.Bot.Types.Enums;
+using Medallion;
 
 namespace Summoner.Games
 {
@@ -48,6 +49,7 @@ namespace Summoner.Games
 			}
 
 			databaseContext.SetLastPidorLaunchDate();
+
 			new Thread(PidorOfTheDayLaunch)
 				.Start(new GameVariables(bot, message));
 		}
@@ -80,7 +82,6 @@ namespace Summoner.Games
 				gameInProgress = true;
 
 				var chatId = msg.Chat.Id;
-				var random = new Random();
 
 				var phrases = new[]
 				{
@@ -95,12 +96,20 @@ namespace Summoner.Games
 				foreach (var phrase in phrases)
 				{
 					botClient.SendTextMessageAsync(chatId, phrase);
-					Thread.Sleep(1000 * random.Next(3, 10));
+					Thread.Sleep(1000 * Rand.Next(3, 10));
 				}
 
 				var admins = botClient.GetChatAdministratorsAsync(chatId).Result.Where(admin => !admin.User.IsBot).ToArray();
 
-				var faggot = admins[random.Next(admins.Length)].User;
+				int faggotIndex = 0;
+				// Randomize the qty of randomizations.
+				int faggotResearchPhaseQty = Rand.Next(1, admins.Length);
+				for (int i = 0; i < faggotResearchPhaseQty; i++)
+				{
+					faggotIndex = Rand.Next(0, admins.Length);
+				}
+
+				var faggot = admins[faggotIndex].User;
 
 				var message = botClient.SendTextMessageAsync(
 					chatId,
