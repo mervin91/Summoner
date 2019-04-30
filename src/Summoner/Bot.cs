@@ -1,14 +1,16 @@
-﻿using Summoner.Enumerations;
-using Summoner.Games;
+﻿using Summoner.Games;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
+using Summoner.Helpers;
 
 namespace Summoner
 {
@@ -107,7 +109,8 @@ namespace Summoner
 
 		private Dictionary<string, BotMenuAction> CreateGenericMenu() => new Dictionary<string, BotMenuAction>
 		{
-			["/summon"] = new BotMenuAction(SummonForSmoke, "Summon for smoke!"),
+			["/smoke"] = new BotMenuAction(SummonForSmoke, "Smoke break!"),
+			["/coffee"] = new BotMenuAction(SummonForCoffee, "Coffee break!"),
 			["/help"] = new BotMenuAction(ShowHelp, "Show this manual."),
 			["/hi"] = new BotMenuAction(ShowActivity, "Check bots' activity."),
 			["/pidor"] = new BotMenuAction(LaunchPidor, "YAY! PIDOR OF THE DAY!")
@@ -133,7 +136,7 @@ namespace Summoner
 				ParseMode.Markdown);
 		}
 
-		private void SummonForSmoke(Message message)
+		private void Summon(Message message, InputOnlineFile image)
 		{
 			if (NotAppropriateChat(message))
 			{
@@ -149,7 +152,7 @@ namespace Summoner
 			var otherAdmins = botClient.GetChatAdministratorsAsync(message.Chat.Id).Result
 				.Where(admin => !admin.User.IsBot && admin.User.Id != message.From.Id);
 
-			string reply = $"[{string.Join(" ", message.From.FirstName, message.From.LastName)}](tg://user?id={message.From.Id}) summons ALL smokers:";
+			string reply = string.Empty;
 
 			foreach (var admin in otherAdmins)
 			{
@@ -159,7 +162,17 @@ namespace Summoner
 					$"[{string.Join(" ", admin.User.FirstName, admin.User.LastName)}](tg://user?id={admin.User.Id})");
 			}
 
-			botClient.SendTextMessageAsync(message.Chat.Id, reply, ParseMode.Markdown);
+			botClient.SendPhotoAsync(message.Chat.Id, image, reply, ParseMode.Markdown);
+		}
+
+		private void SummonForSmoke(Message message)
+		{
+			Summon(message, Images.Smoke);
+		}
+
+		private void SummonForCoffee(Message message)
+		{
+			Summon(message, Images.Coffee);
 		}
 
 		private void LaunchPidor(Message message)

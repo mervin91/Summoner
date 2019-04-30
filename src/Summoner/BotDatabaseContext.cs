@@ -31,7 +31,7 @@ namespace Summoner
 			updates.Property(update => update.LatestUpdateId).IsRequired();
 
 			var pidorLaunches = modelBuilder.Entity<PidorLaunch>();
-			pidorLaunches.HasKey(launch => launch.LastLaunchDate);
+			pidorLaunches.HasKey(launch => launch.Id);
 			pidorLaunches.Property(launch => launch.LastLaunchDate).IsRequired();
 		}
 
@@ -68,7 +68,7 @@ namespace Summoner
 
 			if (lastPidorLaunch == null)
 			{
-				PidorLaunches.AddAsync(new PidorLaunch { LastLaunchDate = DateTime.Now });
+				PidorLaunches.AddAsync(new PidorLaunch { Id = new Guid(), LastLaunchDate = DateTime.Now });
 			}
 			else
 			{
