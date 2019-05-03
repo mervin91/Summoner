@@ -41,10 +41,10 @@ namespace Summoner.Games
 
 			databaseContext.GetLatestPidorLaunchDate(out DateTime lastFaggotLaunch);
 
-			double hoursDiff = (DateTime.Now - lastFaggotLaunch).TotalHours;
-			if (hoursDiff < 24)
+			var dateDiff = DateTime.Now - lastFaggotLaunch;
+			if (dateDiff.TotalHours < 24)
 			{
-				bot.SendTextMessageAsync(message.Chat.Id, $"PIDOR OF THE DAY was already chosen. Please, try again in {24 - hoursDiff} hours.");
+				bot.SendTextMessageAsync(message.Chat.Id, $"PIDOR OF THE DAY was already chosen. Please, try again in {23 - dateDiff.Hours} hour(s) {59 - dateDiff.Minutes} minute(s).");
 				return;
 			}
 
