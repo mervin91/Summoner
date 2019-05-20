@@ -57,9 +57,9 @@ namespace Summoner
 
 		internal void StartPolling(object callback)
 		{
-			try
+			while (true)
 			{
-				while (true)
+				try
 				{
 					_dbContext.GetLatestUpdateId(out int latestUpdateId);
 
@@ -79,10 +79,10 @@ namespace Summoner
 
 					((TelegramUpdatesCallback)callback).Invoke(updates);
 				}
-			}
-			catch (Exception exception)
-			{
-				Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
+				catch (Exception exception)
+				{
+					Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
+				}
 			}
 		}
 
