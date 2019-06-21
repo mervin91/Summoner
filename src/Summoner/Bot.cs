@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -38,31 +38,24 @@ namespace Summoner
 
 		public Bot()
 		{
-			try
-			{
-				_dbContext = new BotDatabaseContext();
-				botClient = new TelegramBotClient(ConfigResolver.Instance.AuthenticationToken);
+			_dbContext = new BotDatabaseContext();
+			botClient = new TelegramBotClient(ConfigResolver.Instance.AuthenticationToken);
 
-				botMenu = CreateGenericMenu();
+			botMenu = CreateGenericMenu();
 
-				callback += ResolveUpdates;
+			callback += ResolveUpdates;
 
-				new Thread(StartPolling).Start(callback);
-			}
-			catch (Exception exception)
-			{
-				Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
-			}
+			new Thread(StartPolling).Start(callback);
 		}
 
 		internal void StartPolling(object callback)
 		{
 			while (true)
 			{
+				_dbContext.GetLatestUpdateId(out int latestUpdateId);
+
 				try
 				{
-					_dbContext.GetLatestUpdateId(out int latestUpdateId);
-
 					Update[] updates = botClient.GetUpdatesAsync(
 						latestUpdateId + Constants.TelegramUpdatesOffset,
 						timeout: Constants.LongPollingTimeout,
@@ -79,11 +72,32 @@ namespace Summoner
 
 					((TelegramUpdatesCallback)callback).Invoke(updates);
 				}
-				catch (Exception exception)
+				catch (Exception ex)
 				{
-					Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
+					HandleException(ex);
 				}
 			}
+		}
+
+		private void HandleException(Exception exception)
+		{
+			if (exception is AggregateException)
+			{
+				var aggregateException = (AggregateException)exception;
+				aggregateException.Handle(ex =>
+				{
+					if (ex is System.Net.Http.HttpRequestException)
+					{
+						Log.Write(ex.Message + Environment.NewLine + ex.StackTrace);
+						Console.WriteLine($"{DateTime.Now}: Connection issue: trying to re-establish in 10 seconds...");
+						Thread.Sleep(10000);
+					}
+
+					return ex is System.Net.Http.HttpRequestException;
+				});
+			}
+
+			Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
 		}
 
 		private void ResolveUpdates(Update[] updates)
@@ -96,14 +110,7 @@ namespace Summoner
 					return;
 				}
 
-				try
-				{
-					TryGenericMenuAction(message);
-				}
-				catch (Exception exception)
-				{
-					Log.Write(exception.Message + Environment.NewLine + exception.StackTrace);
-				}
+				TryGenericMenuAction(message);
 			}
 		}
 
